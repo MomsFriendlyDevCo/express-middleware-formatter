@@ -161,10 +161,23 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as XLSX', function(done) {
-		this.timeout(10 * 1000); // Reading the XLSX can take a while
+	it('should retrieve data encoded as HTML', function(done) {
+		superagent.get(`${url}/api/users?format=html`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
 
-		superagent.get(`${url}/api/users?format=xlsx`)
+				expect(res.text).to.match(/<body>/);
+				expect(res.text).to.match(/<title>/);
+
+				done();
+			});
+	});
+
+	it('should retrieve data encoded as ODS', function(done) {
+		this.timeout(10 * 1000); // Reading the ODS document can take a while
+
+		superagent.get(`${url}/api/users?format=ods`)
 			.buffer()
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
@@ -183,14 +196,23 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as HTML', function(done) {
-		superagent.get(`${url}/api/users?format=html`)
+	it('should retrieve data encoded as XLSX', function(done) {
+		this.timeout(10 * 1000); // Reading the XLSX document can take a while
+
+		superagent.get(`${url}/api/users?format=xlsx`)
+			.buffer()
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
-				expect(res.text).to.be.a('string');
+				expect(res.body).to.be.an.instanceOf(Buffer);
 
-				expect(res.text).to.match(/<body>/);
-				expect(res.text).to.match(/<title>/);
+				var workbook = xlsx.read(res.body);
+				expect(workbook).to.have.a.property('SheetNames');
+				expect(workbook.SheetNames).to.have.length(1);
+
+				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+				expect(data).to.have.lengthOf.at.least(100);
+
+				data.forEach(row => validateUser(emf.unflatten(row)));
 
 				done();
 			});

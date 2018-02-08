@@ -16,6 +16,9 @@ var emf = function(options) {
 		html: {
 			filename: 'Exported Data.html',
 		},
+		ods: {
+			filename: 'Exported Data.ods',
+		},
 		xlsx: {
 			sheetName: 'Exported Data',
 			filename: 'Exported Data.xlsx',
@@ -54,19 +57,6 @@ var emf = function(options) {
 								next('STOP');
 							});
 							break;
-						case 'xlsx':
-							res.type('application/octet-stream');
-							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
-							var workbook = xlsx.utils.book_new();
-							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
-							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
-							res.send(xlsx.write(workbook, {
-								type: 'buffer',
-								bookType: 'xlsx',
-							}));
-
-							next('STOP');
-							break;
 						case 'html':
 							res.type('html');
 							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
@@ -76,6 +66,32 @@ var emf = function(options) {
 							res.send(xlsx.write(workbook, {
 								type: 'buffer',
 								bookType: 'html',
+							}));
+
+							next('STOP');
+							break;
+						case 'ods':
+							res.type('application/octet-stream');
+							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.ods.filename}"`);
+							var workbook = xlsx.utils.book_new();
+							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
+							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
+							res.send(xlsx.write(workbook, {
+								type: 'buffer',
+								bookType: 'ods',
+							}));
+
+							next('STOP');
+							break;
+						case 'xlsx':
+							res.type('application/octet-stream');
+							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
+							var workbook = xlsx.utils.book_new();
+							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
+							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
+							res.send(xlsx.write(workbook, {
+								type: 'buffer',
+								bookType: 'xlsx',
 							}));
 
 							next('STOP');
@@ -104,7 +120,7 @@ var emf = function(options) {
 	};
 };
 
-emf.formats = ['json', 'csv', 'html', 'xlsx'];
+emf.formats = ['json', 'csv', 'html', 'ods', 'xlsx'];
 emf.flatten = flattenObj;
 emf.unflatten = obj => {
 	var expanded = {};
