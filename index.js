@@ -12,6 +12,8 @@ var emf = function(options) {
 			json: true,
 			csv: true,
 			html: true,
+			ods: true,
+			xlsx: true,
 		},
 		html: {
 			filename: 'Exported Data.html',
@@ -27,7 +29,10 @@ var emf = function(options) {
 
 	return function(req, res, next) {
 		var oldJSONHandler = res.json;
-		res.json = function(content) {
+		res.json = function(rawContent) {
+
+			var content = _.isArray(rawContent) ? rawContent : [rawContent]; // Force content to be an array when outputting
+
 			async()
 				.set('context', this)
 				// Get the output format {{{
@@ -42,6 +47,7 @@ var emf = function(options) {
 					}
 				})
 				// }}}
+				// Format the data using the correct system {{{
 				.then(function(next) {
 					switch (this.format) {
 						case 'json':
@@ -100,6 +106,7 @@ var emf = function(options) {
 							next(`Unknown output format: "${this.format}"`);
 					}
 				})
+				// }}}
 				// End - either crash out or revert to the default ExpressJS handler to pass the result onto the upstream {{{
 				.end(function(err) {
 					if (err && err == 'STOP') { // End the chain assuming something above here has already replied to the request
@@ -109,7 +116,7 @@ var emf = function(options) {
 						throw new Error(err);
 					} else {
 						res.type('application/json');
-						oldJSONHandler.call(this.context, content); // Let the downstream serve the data as needed
+						oldJSONHandler.call(this.context, rawContent); // Let the downstream serve the data as needed
 					}
 				});
 				// }}}

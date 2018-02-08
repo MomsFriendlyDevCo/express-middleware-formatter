@@ -63,9 +63,11 @@ describe('express-middleware-formatter', function() {
 		app.use(expressLogger);
 		app.set('log.indent', '      ');
 
-		app.get('/api/users', emf(), (req, res) => {
-			res.send(users);
-		});
+		// Get all users
+		app.get('/api/users', emf(), (req, res) => res.send(users));
+
+		// Get a specific user
+		app.get('/api/users/:index', emf(), (req, res) => users[req.params.index] ? res.send(users[req.params.index]) : res.status(404).end());
 
 		server = app.listen(port, null, function(err) {
 			if (err) return done(err);
@@ -132,10 +134,12 @@ describe('express-middleware-formatter', function() {
 
 		expect(user).to.have.property('allowLogin');
 		// expect(user.allowLogin).to.be.a('boolean'); // See lastLogin comment
+
+		return true; // If we got to here and didn't throw assume everything validated
 	};
 	// }}}
 
-	it('should retrieve simple JSON data', done => {
+	it('should retrieve simple JSON array data - unmodified', done => {
 		superagent.get(`${url}/api/users`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
@@ -146,7 +150,7 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as CSV', done => {
+	it('should retrieve array data encoded as CSV', done => {
 		superagent.get(`${url}/api/users?format=csv`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
@@ -161,7 +165,7 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as HTML', function(done) {
+	it('should retrieve array data encoded as HTML', function(done) {
 		superagent.get(`${url}/api/users?format=html`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
@@ -174,7 +178,7 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as ODS', function(done) {
+	it('should retrieve array data encoded as ODS', function(done) {
 		this.timeout(10 * 1000); // Reading the ODS document can take a while
 
 		superagent.get(`${url}/api/users?format=ods`)
@@ -196,7 +200,7 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('should retrieve data encoded as XLSX', function(done) {
+	it('should retrieve array data encoded as XLSX', function(done) {
 		this.timeout(10 * 1000); // Reading the XLSX document can take a while
 
 		superagent.get(`${url}/api/users?format=xlsx`)
@@ -215,6 +219,30 @@ describe('express-middleware-formatter', function() {
 				data.forEach(row => validateUser(emf.unflatten(row)));
 
 				done();
+			});
+	});
+
+	it('shdould retrieve object data as JSON - unmodified', function(done) {
+		superagent.get(`${url}/api/users/50`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.body).to.be.an('object');
+				expect(res.body).to.satisfy(user => validateUser(res.body));
+				done();
+			});
+	});
+
+	it('shdould retrieve object data as CSV', function(done) {
+		superagent.get(`${url}/api/users/50?format=csv`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				csv
+					.fromString(res.text, {headers: true})
+					.on('data-invalid', row => mlog.log('INVALID', row))
+					.on('data', row => validateUser(emf.unflatten(row)))
+					.on('end', err => done())
 			});
 	});
 
