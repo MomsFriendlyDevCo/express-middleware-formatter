@@ -2,13 +2,23 @@ var _ = require('lodash');
 var async = require('async-chainable');
 var csv = require('fast-csv');
 var flattenObj = require('flatten-obj')();
+var xlsx = require('xlsx');
 
 var emf = function(options) {
 	var settings = _.defaults(options, {
+		// filename: 'Downloaded Data.data', // If set overrides each individual output types filename
 		format: (req, res, done) => req.query.format || 'json',
 		formats: {
 			json: true,
 			csv: true,
+			html: true,
+		},
+		html: {
+			filename: 'Exported Data.html',
+		},
+		xlsx: {
+			sheetName: 'Exported Data',
+			filename: 'Exported Data.xlsx',
 		},
 	});
 
@@ -36,13 +46,39 @@ var emf = function(options) {
 							next();
 							break;
 						case 'csv':
-							csv.writeToString(content.map(i => flattenObj(i)), {
+							csv.writeToString(content.map(i => emf.flatten(i)), {
 								headers: true,
 							}, function(err, text) {
 								res.type('text/plain');
 								res.send(text); // Replace content with our encoded CSV
 								next('STOP');
 							});
+							break;
+						case 'xlsx':
+							res.type('application/octet-stream');
+							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
+							var workbook = xlsx.utils.book_new();
+							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
+							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
+							res.send(xlsx.write(workbook, {
+								type: 'buffer',
+								bookType: 'xlsx',
+							}));
+
+							next('STOP');
+							break;
+						case 'html':
+							res.type('html');
+							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
+							var workbook = xlsx.utils.book_new();
+							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
+							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
+							res.send(xlsx.write(workbook, {
+								type: 'buffer',
+								bookType: 'html',
+							}));
+
+							next('STOP');
 							break;
 						default:
 							next(`Unknown output format: "${this.format}"`);
@@ -68,6 +104,7 @@ var emf = function(options) {
 	};
 };
 
+emf.formats = ['json', 'csv', 'html', 'xlsx'];
 emf.flatten = flattenObj;
 emf.unflatten = obj => {
 	var expanded = {};

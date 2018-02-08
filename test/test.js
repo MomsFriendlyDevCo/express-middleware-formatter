@@ -6,6 +6,7 @@ var csv = require('fast-csv');
 var faker = require('faker');
 var mlog = require('mocha-logger');
 var superagent = require('superagent');
+var xlsx = require('xlsx');
 
 var app = express();
 var server;
@@ -158,5 +159,51 @@ describe('express-middleware-formatter', function() {
 					.on('data', row => validateUser(emf.unflatten(row)))
 					.on('end', err => done())
 			});
+	});
+
+	it('should retrieve data encoded as XLSX', function(done) {
+		this.timeout(10 * 1000); // Reading the XLSX can take a while
+
+		superagent.get(`${url}/api/users?format=xlsx`)
+			.buffer()
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.body).to.be.an.instanceOf(Buffer);
+
+				var workbook = xlsx.read(res.body);
+				expect(workbook).to.have.a.property('SheetNames');
+				expect(workbook.SheetNames).to.have.length(1);
+
+				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+				expect(data).to.have.lengthOf.at.least(100);
+
+				data.forEach(row => validateUser(emf.unflatten(row)));
+
+				done();
+			});
+	});
+
+	it('should retrieve data encoded as HTML', function(done) {
+		superagent.get(`${url}/api/users?format=html`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				expect(res.text).to.match(/<body>/);
+				expect(res.text).to.match(/<title>/);
+
+				done();
+			});
+	});
+
+
+	// Remove the ".skip" suffix to run human tests
+	it.skip('should run a server forever (human browser testing)', function(done) {
+		this.timeout(false);
+
+		mlog.log('This test will never end, you can visit the URL in your browser with any of the following to test the output:');
+		emf.formats.forEach(format => mlog.log(`   ${url}/api/users?format=${format}`));
+
+		// Intentionally never call done()
 	});
 });
