@@ -1,24 +1,26 @@
 {
-  "name": "express-middleware-formatter",
-  "version": "0.0.0",
+  "name": "@momsfriendlydevco/express-middleware-formatter",
+  "version": "1.0.0",
   "description": "ExpressJS middleware that provides alternative output formats from JSON data",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hash-bang/express-middleware-formatter.git"
+    "url": "git://github.com/MomsFriendlyDevCo/express-middleware-formatter.git"
   },
   "keywords": [
     "express",
     "expressjs",
     "data",
-    "formatter"
+    "formatter",
+    "csv",
+    "xlsx"
   ],
   "author": "Matt Carter <m@ttcarter.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hash-bang/express-middleware-formatter/issues"
+    "url": "https://github.com/MomsFriendlyDevCo/express-middleware-formatter/issues"
   },
-  "homepage": "https://github.com/hash-bang/express-middleware-formatter",
+  "homepage": "https://github.com/MomsFriendlyDevCo/express-middleware-formatter",
   "devDependencies": {
     "chai": "^4.1.2",
     "express": "^4.16.2",
