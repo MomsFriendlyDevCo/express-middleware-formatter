@@ -55,7 +55,7 @@ Supported options:
 
 emf.formats
 -----------
-An array of all the supported output formats.
+An object of all the supported output formats. The key is the short format name (`csv`, `pdf` etc.) with the key as the export of the format module.
 
 
 emf.flatten(object)
