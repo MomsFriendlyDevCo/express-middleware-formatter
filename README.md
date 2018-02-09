@@ -34,7 +34,6 @@ Supported options:
 |------------------|------------------------|------------------------|---------------------------------------------------------------------------------------------------|
 | `filename`       | `string`               | Unset                  | If set this will be the filename used for any output format that requires a filename, overriding their own format specific filenames |
 | `format`         | `string` or `function` | See source             | Forced format to return as a string or if a function how to determine the format. By default this uses the `req.query.format` property if present |
-| `formats`        | `object`               |                        | An object containing each format and whether it is enabled, set any value to false to disable that format |
 | `csv`            | `object`               |                        | CSV specific options                                                                              |
 | `csv.filename`   | `string`               | `"Exported Data.csv"`  | Default filename when exporting as CSV                                                            |
 | `html`           | `object`               |                        | HTML specific options                                                                             |
@@ -43,6 +42,7 @@ Supported options:
 | `ods.filename`   | `string`               | `"Exported Data.ods"`  | Default filename when exporting as ODS                                                            |
 | `xlsx`           | `object`               |                        | XLSX specific options                                                                             |
 | `xlsx.filename`  | `string`               | `"Exported Data.xlsx"` | Default filename when exporting as XLSX                                                           |
+| `xlsx.sheetName` | `string`               | `"Exported Data"`      | Default sheet name in the exported file                                                           |
 
 
 **NOTE:** Since EMF has to extend the `res.send()` / `res.json()` Express functions, EMF must be installed as a middleware *before* calls to those functions occur. Thus: `app.get('/somwhere', emf(), (res, res) => ...)` is valid, `app.get('/somwhere', (res, res) => ..., emf())` is not.

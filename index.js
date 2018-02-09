@@ -1,31 +1,16 @@
 var _ = require('lodash');
 var async = require('async-chainable');
-var csv = require('fast-csv');
 var flattenObj = require('flatten-obj')();
-var xlsx = require('xlsx');
 
 var emf = function(options) {
 	var settings = _.defaults(options, {
 		// filename: 'Downloaded Data.data', // If set overrides each individual output types filename
 		format: (req, res, done) => req.query.format || 'json',
-		formats: {
-			json: true,
-			csv: true,
-			html: true,
-			ods: true,
-			xlsx: true,
-		},
-		html: {
-			filename: 'Exported Data.html',
-		},
-		ods: {
-			filename: 'Exported Data.ods',
-		},
-		xlsx: {
-			sheetName: 'Exported Data',
-			filename: 'Exported Data.xlsx',
-		},
+		// All other settings are inherited from format files (see below)
 	});
+
+	// Bring in each loaded formats own settings structure
+	_.forEach(emf.formats, format => _.defaults(settings, format.settings));
 
 	return function(req, res, next) {
 		var oldJSONHandler = res.json;
@@ -49,62 +34,9 @@ var emf = function(options) {
 				// }}}
 				// Format the data using the correct system {{{
 				.then(function(next) {
-					switch (this.format) {
-						case 'json':
-							// Do nothing
-							next();
-							break;
-						case 'csv':
-							csv.writeToString(content.map(i => emf.flatten(i)), {
-								headers: true,
-							}, function(err, text) {
-								res.type('text/plain');
-								res.send(text); // Replace content with our encoded CSV
-								next('STOP');
-							});
-							break;
-						case 'html':
-							res.type('html');
-							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
-							var workbook = xlsx.utils.book_new();
-							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
-							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
-							res.send(xlsx.write(workbook, {
-								type: 'buffer',
-								bookType: 'html',
-							}));
+					if (!emf.formats[this.format]) return next(`Unknown output format: "${this.format}"`);
 
-							next('STOP');
-							break;
-						case 'ods':
-							res.type('application/octet-stream');
-							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.ods.filename}"`);
-							var workbook = xlsx.utils.book_new();
-							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
-							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
-							res.send(xlsx.write(workbook, {
-								type: 'buffer',
-								bookType: 'ods',
-							}));
-
-							next('STOP');
-							break;
-						case 'xlsx':
-							res.type('application/octet-stream');
-							res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
-							var workbook = xlsx.utils.book_new();
-							var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
-							xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
-							res.send(xlsx.write(workbook, {
-								type: 'buffer',
-								bookType: 'xlsx',
-							}));
-
-							next('STOP');
-							break;
-						default:
-							next(`Unknown output format: "${this.format}"`);
-					}
+					emf.formats[this.format].transform(emf, settings, content, req, res, next);
 				})
 				// }}}
 				// End - either crash out or revert to the default ExpressJS handler to pass the result onto the upstream {{{
@@ -127,7 +59,14 @@ var emf = function(options) {
 	};
 };
 
-emf.formats = ['json', 'csv', 'html', 'ods', 'xlsx'];
+emf.formats = {
+	json: require('./formats/json'),
+	csv: require('./formats/csv'),
+	html: require('./formats/html'),
+	ods: require('./formats/ods'),
+	xlsx: require('./formats/xlsx'),
+};
+
 emf.flatten = flattenObj;
 emf.unflatten = obj => {
 	var expanded = {};
