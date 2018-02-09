@@ -5,7 +5,15 @@ var flattenObj = require('flatten-obj')();
 var emf = function(options) {
 	var settings = _.defaults(options, {
 		// filename: 'Downloaded Data.data', // If set overrides each individual output types filename
-		format: (req, res, done) => req.query.format || 'json',
+		format: (req, res, done) => {
+			if (req.query.format) {
+				var format = req.query.format;
+				delete req.query.format;
+				return format;
+			} else {
+				return 'json';
+			}
+		},
 		// All other settings are inherited from format files (see below)
 	});
 
@@ -14,24 +22,14 @@ var emf = function(options) {
 
 	return function(req, res, next) {
 		var oldJSONHandler = res.json;
+
 		res.json = function(rawContent) {
 
 			var content = _.isArray(rawContent) ? rawContent : [rawContent]; // Force content to be an array when outputting
 
 			async()
 				.set('context', this)
-				// Get the output format {{{
-				.then('format', function(next) {
-					if (_.isString(settings.format)) {
-						next(null, settings.format);
-					} else if (_.isFunction(settings.format)) {
-						var immediateVal = settings.format(req, res, next);
-						if (immediateVal) next(null, immediateVal); // If we got a value back - just use it, if not wait for async response before using that
-					} else {
-						throw new Error('Unknown format setting type');
-					}
-				})
-				// }}}
+				.set('format', req.emfFormat) // Determined by the below async function
 				// Format the data using the correct system {{{
 				.then(function(next) {
 					if (!emf.formats[this.format]) return next(`Unknown output format: "${this.format}"`);
@@ -44,7 +42,7 @@ var emf = function(options) {
 					if (err && err == 'STOP') { // End the chain assuming something above here has already replied to the request
 						// Pass
 					} else if (err) {
-						res.status(500).end();
+						res.sendStatus(500);
 						throw new Error(err);
 					} else {
 						res.type('application/json');
@@ -53,9 +51,34 @@ var emf = function(options) {
 				});
 				// }}}
 
+			return this; // So express can chain (e.g. `res.json(something).end()`) - although they shouldn't be using that syntax anyway really
 		};
 
-		next();
+		// Answer the original request - determine async operations like the format etc. if needed
+		async()
+			// Evaulate (and mutaute) the incomming format if necessary) {{{
+			.then(function(next) {
+				if (_.isString(settings.format)) {
+					req.emfFormat = settings.format;
+					next();
+				} else if (_.isFunction(settings.format)) {
+					var immediateVal = settings.format(req, res, next);
+					if (immediateVal) {
+						req.emfFormat = immediateVal;
+						next();
+					} else {
+						next(null, function(err, value) {
+							if (err) return next(err);
+							req.emfFormat = value;
+							next();
+						});
+					}
+				} else {
+					throw new Error('Unknown format setting type');
+				}
+			})
+			// }}}
+			.end(next)
 	};
 };
 

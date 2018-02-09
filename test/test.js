@@ -267,7 +267,7 @@ describe('express-middleware-formatter', function() {
 
 
 	// Remove the ".skip" suffix to run human tests
-	it('should run a server forever (human browser testing)', function(done) {
+	it.skip('should run a server forever (human browser testing)', function(done) {
 		this.timeout(false);
 
 		mlog.log('This test will never end, you can visit the URL in your browser with any of the following to test the output:');
