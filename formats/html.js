@@ -4,6 +4,7 @@ module.exports = {
 	id: 'html',
 	settings: {
 		html: {
+			download: false,
 			filename: 'Exported Data.html',
 			passthru: false,
 		},
@@ -19,7 +20,7 @@ module.exports = {
 
 		if (!settings.html.passthru) {
 			res.type('html');
-			res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
+			if (settings.html.download) res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
 			res.send(outputBuffer);
 			next('STOP');
 		} else {

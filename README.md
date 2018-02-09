@@ -37,11 +37,13 @@ Supported options:
 | `csv`            | `object`               |                        | CSV specific options                                                                              |
 | `csv.filename`   | `string`               | `"Exported Data.csv"`  | Default filename when exporting as CSV                                                            |
 | `html`           | `object`               |                        | HTML specific options                                                                             |
+| `html.download`  | `boolean`              | `false`                | If false, the HTML will be shown in the browser, if true the file will be forced as a download    |
 | `html.filename`  | `string`               | `"Exported Data.html"` | Default filename when exporting as HTML                                                           |
 | `html.passthru`  | `boolean`              | `false`                | Force the HTML output plugin to compute the data but not resolve the response - used internally by upstream formatters like `pdf` |
 | `ods`            | `object`               |                        | ODS specific options                                                                              |
 | `ods.filename`   | `string`               | `"Exported Data.ods"`  | Default filename when exporting as ODS                                                            |
 | `pdf`            | `object`               |                        | PDF specific options                                                                              |
+| `pdf.download`   | `boolean`              | `true`                 | If false, the PDF will be shown in the browser (if the browser supports it), if true the file will be forced as a download |
 | `pdf.filename`   | `string`               | `"Exported Data.pdf"`  | Default filename when exporting as PDF                                                            |
 | `xlsx`           | `object`               |                        | XLSX specific options                                                                             |
 | `xlsx.filename`  | `string`               | `"Exported Data.xlsx"` | Default filename when exporting as XLSX                                                           |
