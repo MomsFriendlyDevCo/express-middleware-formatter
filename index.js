@@ -64,6 +64,7 @@ emf.formats = {
 	csv: require('./formats/csv'),
 	html: require('./formats/html'),
 	ods: require('./formats/ods'),
+	pdf: require('./formats/pdf'),
 	xlsx: require('./formats/xlsx'),
 };
 

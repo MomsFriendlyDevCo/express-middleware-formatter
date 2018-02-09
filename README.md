@@ -38,8 +38,11 @@ Supported options:
 | `csv.filename`   | `string`               | `"Exported Data.csv"`  | Default filename when exporting as CSV                                                            |
 | `html`           | `object`               |                        | HTML specific options                                                                             |
 | `html.filename`  | `string`               | `"Exported Data.html"` | Default filename when exporting as HTML                                                           |
+| `html.passthru`  | `boolean`              | `false`                | Force the HTML output plugin to compute the data but not resolve the response - used internally by upstream formatters like `pdf` |
 | `ods`            | `object`               |                        | ODS specific options                                                                              |
 | `ods.filename`   | `string`               | `"Exported Data.ods"`  | Default filename when exporting as ODS                                                            |
+| `pdf`            | `object`               |                        | PDF specific options                                                                              |
+| `pdf.filename`   | `string`               | `"Exported Data.pdf"`  | Default filename when exporting as PDF                                                            |
 | `xlsx`           | `object`               |                        | XLSX specific options                                                                             |
 | `xlsx.filename`  | `string`               | `"Exported Data.xlsx"` | Default filename when exporting as XLSX                                                           |
 | `xlsx.sheetName` | `string`               | `"Exported Data"`      | Default sheet name in the exported file                                                           |

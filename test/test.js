@@ -4,8 +4,10 @@ var expressLogger = require('express-log-url');
 var emf = require('..');
 var csv = require('fast-csv');
 var faker = require('faker');
+var fs = require('fs');
 var mlog = require('mocha-logger');
 var superagent = require('superagent');
+var temp = require('temp');
 var xlsx = require('xlsx');
 
 var app = express();
@@ -200,6 +202,23 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
+	it('should retrieve array data encoded as PDF', function(done) {
+		this.timeout(10 * 1000); // Reading the XLSX document can take a while
+
+		superagent.get(`${url}/api/users?format=pdf`)
+			.buffer()
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.body).to.be.an.instanceOf(Buffer);
+
+				var pdfPath = temp.path({prefix: 'emf-test-pdf-', suffix: '.pdf'});
+				fs.writeFileSync(pdfPath, res.body);
+				mlog.log(`cant really test PDFs so here it is on disk - ${pdfPath}`);
+
+				done();
+			});
+	});
+
 	it('should retrieve array data encoded as XLSX', function(done) {
 		this.timeout(10 * 1000); // Reading the XLSX document can take a while
 
@@ -248,11 +267,11 @@ describe('express-middleware-formatter', function() {
 
 
 	// Remove the ".skip" suffix to run human tests
-	it.skip('should run a server forever (human browser testing)', function(done) {
+	it('should run a server forever (human browser testing)', function(done) {
 		this.timeout(false);
 
 		mlog.log('This test will never end, you can visit the URL in your browser with any of the following to test the output:');
-		emf.formats.forEach(format => mlog.log(`   ${url}/api/users?format=${format}`));
+		Object.keys(emf.formats).forEach(format => mlog.log(`   ${url}/api/users?format=${format}`));
 
 		// Intentionally never call done()
 	});
