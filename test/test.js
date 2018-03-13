@@ -69,7 +69,16 @@ describe('express-middleware-formatter', function() {
 		app.get('/api/users', emf(), (req, res) => res.send(users));
 
 		// Get a specific user
-		app.get('/api/users/:index', emf(), (req, res) => users[req.params.index] ? res.send(users[req.params.index]) : res.status(404).end());
+		app.get('/api/users/:index', emf(), (req, res) => users[req.params.index] ? res.send(users[req.params.index]) : res.sendStatus(404));
+
+		// Get a specific user with meta information
+		app.get('/api/users/:index/meta', emf({key: 'data'}), (req, res) => {
+			if (!users[req.params.index]) return res.sendStatus(404);
+			res.send({
+				meta: 'Some meta information',
+				data: users[req.params.index],
+			});
+		});
 
 		server = app.listen(port, null, function(err) {
 			if (err) return done(err);
@@ -179,6 +188,20 @@ describe('express-middleware-formatter', function() {
 				done();
 			});
 	});
+
+	it('should retrieve array data encoded as HTML (via a subkey)', function(done) {
+		superagent.get(`${url}/api/users/1/meta?format=html`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				expect(res.text).to.match(/<body>/);
+				expect(res.text).to.match(/<title>/);
+
+				done();
+			});
+	});
+
 
 	it('should retrieve array data encoded as ODS', function(done) {
 		this.timeout(10 * 1000); // Reading the ODS document can take a while

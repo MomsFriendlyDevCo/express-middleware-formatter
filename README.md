@@ -34,6 +34,7 @@ Supported options:
 |------------------|------------------------|------------------------|---------------------------------------------------------------------------------------------------|
 | `filename`       | `string`               | Unset                  | If set this will be the filename used for any output format that requires a filename, overriding their own format specific filenames |
 | `format`         | `string` or `function` | See source             | Forced format to return as a string or if a function how to determine the format. By default this uses the `req.query.format` property if present |
+| `key`            | `string`               | `null`                 | Extract tabular data from this key path (dotted or array notation is supported) instead of assuming the whole JSON response is the tabular data |
 | `csv`            | `object`               |                        | CSV specific options                                                                              |
 | `csv.filename`   | `string`               | `"Exported Data.csv"`  | Default filename when exporting as CSV                                                            |
 | `html`           | `object`               |                        | HTML specific options                                                                             |

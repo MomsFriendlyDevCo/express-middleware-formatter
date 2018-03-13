@@ -4,6 +4,7 @@ var flattenObj = require('flatten-obj')();
 
 var emf = function(options) {
 	var settings = _.defaults(options, {
+		key: undefined,
 		// filename: 'Downloaded Data.data', // If set overrides each individual output types filename
 		format: (req, res, done) => {
 			if (req.query.format) {
@@ -24,8 +25,7 @@ var emf = function(options) {
 		var oldJSONHandler = res.json;
 
 		res.json = function(rawContent) {
-
-			var content = _.isArray(rawContent) ? rawContent : [rawContent]; // Force content to be an array when outputting
+			var content = _.castArray(settings.key ? _.get(rawContent, settings.key) : rawContent); // Force content to be an array when outputting
 
 			async()
 				.set('context', this)
