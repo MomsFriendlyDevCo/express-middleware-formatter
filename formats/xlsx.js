@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var xlsx = require('xlsx');
 
 module.exports = {
@@ -9,6 +10,8 @@ module.exports = {
 		},
 	},
 	transform: function(emf, settings, content, req, res, next) {
+		if (!_.isArray(content)) return next('Data is not suitable for the CSV output format');
+
 		res.type('application/octet-stream');
 		res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
 		var workbook = xlsx.utils.book_new();

@@ -16,6 +16,8 @@ module.exports = {
 		},
 	},
 	transform: function(emf, settings, content, req, res, next) {
+		if (!_.isArray(content)) return next('Data is not suitable for the CSV output format');
+
 		async()
 			// Compute temporary files to dump to (Prince can't cope with buffers or streams so we have to flush to the FS) {{{
 			.set('princeHTML', temp.path({prefix: 'emf-pdf-', suffix: '.html'}))

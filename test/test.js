@@ -68,11 +68,21 @@ describe('express-middleware-formatter', function() {
 		// Get all users
 		app.get('/api/users', emf(), (req, res) => res.send(users));
 
+		// Get all users nested inside an array + objects (tests that we can unpack it later)
+		app.get('/api/users-nested-array', emf({unpack: data => data[0]}), (req, res) => res.send([users]));
+		app.get('/api/users-nested-object', emf({unpack: data => data.result}), (req, res) => res.send({result: users}));
+		app.get('/api/users-nested-array-promise', emf({
+			unpack: [ // Setup an array of functions to run
+				data => new Promise(resolve => setTimeout(()=> resolve(data), 50)), // Do nothing except wait for a promise
+				data => new Promise(resolve => setTimeout(()=> resolve(data[0]), 100)), // Unpack data lazily within a promise
+			],
+		}), (req, res) => res.send([users]));
+
 		// Get a specific user
-		app.get('/api/users/:index', emf(), (req, res) => users[req.params.index] ? res.send(users[req.params.index]) : res.sendStatus(404));
+		app.get('/api/users/:index', emf({forceArray: true}), (req, res) => users[req.params.index] ? res.send(users[req.params.index]) : res.sendStatus(404));
 
 		// Get a specific user with meta information
-		app.get('/api/users/:index/meta', emf({key: 'data'}), (req, res) => {
+		app.get('/api/users/:index/meta', emf({key: 'data', forceArray: true}), (req, res) => {
 			if (!users[req.params.index]) return res.sendStatus(404);
 			res.send({
 				meta: 'Some meta information',
@@ -264,7 +274,7 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('shdould retrieve object data as JSON - unmodified', function(done) {
+	it('should retrieve object data as JSON - unmodified', function(done) {
 		superagent.get(`${url}/api/users/50`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
@@ -274,8 +284,50 @@ describe('express-middleware-formatter', function() {
 			});
 	});
 
-	it('shdould retrieve object data as CSV', function(done) {
+	it('should retrieve object data as CSV', function(done) {
 		superagent.get(`${url}/api/users/50?format=csv`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				csv
+					.fromString(res.text, {headers: true})
+					.on('data-invalid', row => mlog.log('INVALID', row))
+					.on('data', row => validateUser(emf.unflatten(row)))
+					.on('end', err => done())
+			});
+	});
+
+	it('should unpack custom data from an array', function(done) {
+		superagent.get(`${url}/api/users-nested-array?format=csv`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				csv
+					.fromString(res.text, {headers: true})
+					.on('data-invalid', row => mlog.log('INVALID', row))
+					.on('data', row => validateUser(emf.unflatten(row)))
+					.on('end', err => done())
+			});
+	});
+
+	it('should unpack custom data from an object', function(done) {
+		superagent.get(`${url}/api/users-nested-object?format=csv`)
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.text).to.be.a('string');
+
+				csv
+					.fromString(res.text, {headers: true})
+					.on('data-invalid', row => mlog.log('INVALID', row))
+					.on('data', row => validateUser(emf.unflatten(row)))
+					.on('end', err => done())
+			});
+	});
+
+	it('should unpack custom data from an array via promises', function(done) {
+		superagent.get(`${url}/api/users-nested-array-promise?format=csv`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
 				expect(res.text).to.be.a('string');

@@ -15,6 +15,8 @@ var emf = function(options) {
 				return 'json';
 			}
 		},
+		unpack: undefined,
+		forceArary: false,
 		// All other settings are inherited from format files (see below)
 	});
 
@@ -25,22 +27,67 @@ var emf = function(options) {
 		var oldJSONHandler = res.json;
 
 		res.json = function(rawContent) {
-			var content = _.castArray(settings.key ? _.get(rawContent, settings.key) : rawContent); // Force content to be an array when outputting
-
 			async()
+				.set('content', rawContent)
 				.set('context', this)
 				.set('format', req.emfFormat) // Determined by the below async function
+				// Extract content from key if it is specified {{{
+				.then('content', function(next) {
+					// Extract content from key first?
+					if (settings.key) {
+						if (_.has(this.content, settings.key)) {
+							this.content = _.get(this.content, settings.key);
+						} else {
+							return next('Cannot find required sub-key for data extraction');
+						}
+					}
+
+					// Check format of data is correct (or force into array if needed)
+					if (_.isArray(this.content)) { // Output is aready in a suitable array format
+						next(null, this.content);
+					} else if (settings.forceArray && _.isObject(this.content)) { // Force single return object return into an array
+						next(null, _.castArray(this.content));
+					} else if (settings.unpack) { // Some unpacking is supported - pass on flow to that and hope it gives us what we want
+						next(null, this.content);
+					} else { // Return data is in an unsuitable format and we've run out of options
+						next(null, 'Data formatting is unsupported');
+					}
+				})
+				// }}}
+				// Run all unpack items {{{
+				.then('content', function(next) {
+					if (!settings.unpack || !settings.unpack.length) return next(null, this.content);
+
+					async()
+						.set('content', this.content)
+						.forEach(_.castArray(settings.unpack), function(next, unpacker) {
+							var res = unpacker.call(this, this.content);
+							if (res instanceof Promise) { // Wait for the promise to resolve
+								res
+									.then(res => {
+										this.content = res;
+										next();
+									})
+									.catch(next);
+							} else { // Pass-through - use the value
+								this.content = res;
+								next();
+							}
+						})
+						.end('content', next);
+				})
+				// }}}
 				// Format the data using the correct system {{{
 				.then(function(next) {
 					if (!emf.formats[this.format]) return next(`Unknown output format: "${this.format}"`);
 
-					emf.formats[this.format].transform(emf, settings, content, req, res, next);
+					emf.formats[this.format].transform(emf, settings, this.content, req, res, next);
 				})
 				// }}}
 				// End - either crash out or revert to the default ExpressJS handler to pass the result onto the upstream {{{
 				.end(function(err) {
 					if (err && err == 'STOP') { // End the chain assuming something above here has already replied to the request
-						// Pass
+						// Do nothing
 					} else if (err) {
 						res.sendStatus(500);
 						throw new Error(err);
