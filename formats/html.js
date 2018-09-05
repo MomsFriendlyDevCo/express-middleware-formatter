@@ -8,6 +8,8 @@ module.exports = {
 			download: false,
 			filename: 'Exported Data.html',
 			passthru: false,
+			header: '<html><title>Exported data</title><body>',
+			footer: '</body></html>',
 		},
 	},
 	transform: function(emf, settings, content, req, res, next) {
@@ -19,6 +21,8 @@ module.exports = {
 		var outputBuffer = xlsx.write(workbook, {
 			type: 'buffer',
 			bookType: 'html',
+			header: settings.html.header,
+			footer: settings.html.footer,
 		});
 
 		if (!settings.html.passthru) {

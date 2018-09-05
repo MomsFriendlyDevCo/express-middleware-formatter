@@ -42,6 +42,8 @@ Supported options:
 | `html`           | `object`               |                        | HTML specific options                                                                             |
 | `html.download`  | `boolean`              | `false`                | If false, the HTML will be shown in the browser, if true the file will be forced as a download    |
 | `html.filename`  | `string`               | `"Exported Data.html"` | Default filename when exporting as HTML                                                           |
+| `html.footer`    | `string`               | (Simple HTML footer)   | Set the HTML suffix after outputting the body content for HTML                                    |
+| `html.header`    | `string`               | (Simple HTML header)   | Set the HTML prefix before outputting the body content for HTML                                   |
 | `html.passthru`  | `boolean`              | `false`                | Force the HTML output plugin to compute the data but not resolve the response - used internally by upstream formatters like `pdf` |
 | `ods`            | `object`               |                        | ODS specific options                                                                              |
 | `ods.filename`   | `string`               | `"Exported Data.ods"`  | Default filename when exporting as ODS                                                            |
