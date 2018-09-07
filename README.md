@@ -36,7 +36,7 @@ Supported options:
 | `forceArray`     | `boolean`              | `false`                | Wrap the data in an array if the data provided is an object                                       |
 | `format`         | `string` or `function` | See source             | Forced format to return as a string or if a function how to determine the format. By default this uses the `req.query.format` property if present |
 | `key`            | `string`               | `null`                 | Extract tabular data from this key path (dotted or array notation is supported) instead of assuming the whole JSON response is the tabular data |
-| `unpack`         | `function` or `array <function>` | Undefined    | A function or array of functions to run to mangle the data into something that can be processed, promise returns are supported 
+| `unpack`         | `function` or `array <function>` | Undefined    | A function or array of functions to run to mangle the data into something that can be processed, promise returns are supported. Called as `(data, req, res)` |
 | `csv`            | `object`               |                        | CSV specific options                                                                              |
 | `csv.filename`   | `string`               | `"Exported Data.csv"`  | Default filename when exporting as CSV                                                            |
 | `html`           | `object`               |                        | HTML specific options                                                                             |
