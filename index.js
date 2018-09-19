@@ -12,7 +12,7 @@ var emf = function(options) {
 				delete req.query.format;
 				return format;
 			} else {
-				return 'json';
+				return 'raw';
 			}
 		},
 		unpack: undefined,
@@ -27,6 +27,12 @@ var emf = function(options) {
 		var oldJSONHandler = res.json;
 
 		res.json = function(rawContent) {
+			if (!req.emfFormat || req.emfFormat == 'raw') { // Don't transform output
+				res.type('application/json');
+				oldJSONHandler.call(this, rawContent); // Let the downstream serve the data as needed
+				return this;
+			}
+
 			async()
 				.set('content', rawContent)
 				.set('context', this)
