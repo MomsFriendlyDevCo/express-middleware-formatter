@@ -21,8 +21,7 @@ module.exports = {
 		Promise.resolve(settings.xlsx.template)
 			.then(templatePath => {
 				if (templatePath) { // Use @mfdc/spreadsheet-handlebars to template the output
-					// var SpreadsheetHandlebars = require('@momsfriendlydevco/spreadsheet-templater');
-					var SpreadsheetTemplater = require('/home/mc/Dropbox/Projects/Node/@momsfriendlydevco/spreadsheet-templater');
+					var SpreadsheetTemplater = require('@momsfriendlydevco/spreadsheet-templater');
 					res.send(
 						new SpreadsheetTemplater()
 							.read(templatePath)

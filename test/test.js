@@ -304,7 +304,9 @@ describe('express-middleware-formatter', function() {
 					expect(row).to.have.property('Address', `${users[i].address.street}, ${users[i].address.city}, ${users[i].address.zip}`);
 				});
 
-				done();
+				var xlsxPath = temp.path({suffix: '.xlsx'});
+				mlog.log(`cant really test XLSX files visually so here it is on disk - ${xlsxPath}`);
+				fs.writeFile(xlsxPath, res.body, done);
 			});
 	});
 
