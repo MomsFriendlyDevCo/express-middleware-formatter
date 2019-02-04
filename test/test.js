@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var expect = require('chai').expect;
 var express = require('express');
 var expressLogger = require('express-log-url');
@@ -21,7 +22,7 @@ describe('express-middleware-formatter', function() {
 
 	// Setup / Teardown {{{
 	before('setup fake data', ()=> {
-		users = [...Array(100)].map((i, offset) => ({
+		users = Array.from(new Array(100)).map((i, offset) => ({
 			id: `user${offset}`,
 			name: `${faker.name.firstName()} ${faker.name.lastName()}`,
 			username: faker.internet.userName(),
@@ -67,6 +68,7 @@ describe('express-middleware-formatter', function() {
 
 		// Get all users
 		app.get('/api/users', emf(), (req, res) => res.send(users));
+		app.get('/api/users-templated', emf({xlsx: {template: `${__dirname}/data/users.xlsx`}}), (req, res) => res.send(users));
 
 		// Get all users nested inside an array + objects (tests that we can unpack it later)
 		app.get('/api/users-nested-array', emf({unpack: data => data[0]}), (req, res) => res.send([users]));
@@ -269,6 +271,34 @@ describe('express-middleware-formatter', function() {
 				expect(data).to.have.lengthOf.at.least(100);
 
 				data.forEach(row => validateUser(emf.unflatten(row)));
+
+				done();
+			});
+	});
+
+	it('should retrieve array data encoded as XLSX', function(done) {
+		this.timeout(10 * 1000); // Reading the XLSX document can take a while
+
+		superagent.get(`${url}/api/users-templated?format=xlsx`)
+			.buffer()
+			.end((err, res) => {
+				expect(err).to.not.be.ok;
+				expect(res.body).to.be.an.instanceOf(Buffer);
+
+				var workbook = xlsx.read(res.body);
+				expect(workbook).to.have.a.property('SheetNames');
+				expect(workbook.SheetNames).to.have.length(1);
+
+				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+				expect(data).to.have.lengthOf.at.least(100);
+
+				data.forEach((row, i) => {
+					expect(row).to.have.property('ID', users[i].id);
+					expect(row).to.have.property('Username', users[i].username);
+					expect(row).to.have.property('Name', users[i].name);
+					expect(row).to.have.property('Email', users[i].email || 'undefined');
+					expect(row).to.have.property('Address', `${users[i].address.street}, ${users[i].address.city}, ${users[i].address.zip}`);
+				});
 
 				done();
 			});

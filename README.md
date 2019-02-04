@@ -53,6 +53,8 @@ Supported options:
 | `xlsx`           | `object`               |                        | XLSX specific options                                                                             |
 | `xlsx.filename`  | `string`               | `"Exported Data.xlsx"` | Default filename when exporting as XLSX                                                           |
 | `xlsx.sheetName` | `string`               | `"Exported Data"`      | Default sheet name in the exported file                                                           |
+| `xlsx.template`  | `string` or `function` |                        | If specified use [@mfdc/spreadsheet-templater](https://github.com/MomsFriendlyDevCo/spreadsheet-templater) to format the XLSX output (see notes) |
+| `xlsx.templateData` | `function`          | `(req, res, settings, content) => content` | How to mangle the content data before its passed to @mfdc/spreadsheet-templater |
 
 
 **NOTES:**
@@ -60,6 +62,9 @@ Supported options:
 * Since EMF has to extend the `res.send()` / `res.json()` Express functions, EMF must be installed as a middleware *before* calls to those functions occur. Thus: `app.get('/somwhere', emf(), (res, res) => ...)` is valid, `app.get('/somwhere', (res, res) => ..., emf())` is not.
 * Extracting data from a specified `key` occurs before `unpack` is processed
 * An array of items in `unpack` are evaluated in series, any combination of simple function return and promise return are supported
+* If `xlsx.template` is specified or if it returns a path to a valid file it the input data (post `unpack`) will be passed to [@mfdc/spreadsheet-templater](https://github.com/MomsFriendlyDevCo/spreadsheet-templater) for formatting. This allows a template XLSX file which gets passed the input data
+* If `xlsx.template` is a function it is called as `(req, res, emfSettings, content)`
+* As with the above point @mfdc/spreadsheet-templater is an *optional* dependency and must be installed at the project level if `xlsx.template` is specified
 
 
 emf.formats
