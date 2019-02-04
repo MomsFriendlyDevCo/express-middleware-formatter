@@ -64,6 +64,7 @@ Supported options:
 * An array of items in `unpack` are evaluated in series, any combination of simple function return and promise return are supported
 * If `xlsx.template` is specified or if it returns a path to a valid file it the input data (post `unpack`) will be passed to [@mfdc/spreadsheet-templater](https://github.com/MomsFriendlyDevCo/spreadsheet-templater) for formatting. This allows a template XLSX file which gets passed the input data
 * If `xlsx.template` is a function it is called as `(req, res, emfSettings, content)`
+* If `xlsx.template` is an async function or returns a promise it will be resolved asynchronously before continuing
 * As with the above point @mfdc/spreadsheet-templater is an *optional* dependency and must be installed at the project level if `xlsx.template` is specified
 
 

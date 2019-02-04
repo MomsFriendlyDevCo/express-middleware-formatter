@@ -68,7 +68,11 @@ describe('express-middleware-formatter', function() {
 
 		// Get all users
 		app.get('/api/users', emf(), (req, res) => res.send(users));
-		app.get('/api/users-templated', emf({xlsx: {template: `${__dirname}/data/users.xlsx`}}), (req, res) => res.send(users));
+		app.get('/api/users-templated', emf({
+			xlsx: {
+				template: new Promise(resolve => setTimeout(()=> resolve(`${__dirname}/data/users.xlsx`), 10)),
+			},
+		}), (req, res) => res.send(users));
 
 		// Get all users nested inside an array + objects (tests that we can unpack it later)
 		app.get('/api/users-nested-array', emf({unpack: data => data[0]}), (req, res) => res.send([users]));
