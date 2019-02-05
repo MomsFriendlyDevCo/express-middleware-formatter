@@ -27,6 +27,8 @@ var emf = function(options) {
 		var oldJSONHandler = res.json;
 
 		res.json = function(rawContent) {
+			res.json = oldJSONHandler; // Restore old JSON handler in case any downstream modules try to push buffers or something though it
+
 			if (!req.emfFormat || req.emfFormat == 'raw') { // Don't transform output
 				res.type('application/json');
 				oldJSONHandler.call(this, rawContent); // Let the downstream serve the data as needed
@@ -56,7 +58,7 @@ var emf = function(options) {
 					} else if (settings.unpack) { // Some unpacking is supported - pass on flow to that and hope it gives us what we want
 						next(null, this.content);
 					} else { // Return data is in an unsuitable format and we've run out of options
-						next(null, 'Data formatting is unsupported');
+						next('Data formatting is unsupported');
 					}
 				})
 				// }}}

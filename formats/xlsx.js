@@ -5,6 +5,7 @@ module.exports = {
 	id: 'xlsx',
 	settings: {
 		xlsx: {
+			checkArray: true,
 			sheetName: 'Exported Data',
 			filename: 'Exported Data.xlsx',
 			template: false,
@@ -12,7 +13,7 @@ module.exports = {
 		},
 	},
 	transform: function(emf, settings, content, req, res, next) {
-		if (!_.isArray(content)) return next('Data is not suitable for the CSV output format');
+		if ((_.isUndefined(settings.checkArray) || settings.checkArray) && !_.isArray(content)) return next('Data is not suitable for the XLXS output format');
 
 		res.type('application/octet-stream');
 		res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
@@ -22,18 +23,21 @@ module.exports = {
 			.then(templatePath => {
 				if (templatePath) { // Use @mfdc/spreadsheet-handlebars to template the output
 					var SpreadsheetTemplater = require('@momsfriendlydevco/spreadsheet-templater');
-					res.send(
-						new SpreadsheetTemplater()
-							.read(templatePath)
-							.data(settings.xlsx.templateData ? settings.xlsx.templateData(req, res, settings, content) : content)
-							.apply()
-							.buffer()
-					)
+
+					return Promise.resolve()
+						.then(()=> new SpreadsheetTemplater().read(templatePath))
+						.then(template =>
+							template
+								.data(settings.xlsx.templateData ? settings.xlsx.templateData(req, res, settings, content) : content)
+								.apply()
+								.buffer()
+						)
+						.then(buf => res.send(buf))
 				} else { // Squash the content into an array, make a workbook and return it
 					var workbook = xlsx.utils.book_new();
 					var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
 					xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
-					res.send(xlsx.write(workbook, {
+					return res.send(xlsx.write(workbook, {
 						type: 'buffer',
 						bookType: 'xlsx',
 					}));

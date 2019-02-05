@@ -51,6 +51,7 @@ Supported options:
 | `pdf.download`   | `boolean`              | `true`                 | If false, the PDF will be shown in the browser (if the browser supports it), if true the file will be forced as a download |
 | `pdf.filename`   | `string`               | `"Exported Data.pdf"`  | Default filename when exporting as PDF                                                            |
 | `xlsx`           | `object`               |                        | XLSX specific options                                                                             |
+| `xlsx.checkArray`  | `boolean`            | `true`                 | Verify that the input is an array, disable this if picking your own fields when using `xlsx.template` |
 | `xlsx.filename`  | `string`               | `"Exported Data.xlsx"` | Default filename when exporting as XLSX                                                           |
 | `xlsx.sheetName` | `string`               | `"Exported Data"`      | Default sheet name in the exported file                                                           |
 | `xlsx.template`  | `string` or `function` |                        | If specified use [@mfdc/spreadsheet-templater](https://github.com/MomsFriendlyDevCo/spreadsheet-templater) to format the XLSX output (see notes) |
