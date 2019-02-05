@@ -171,7 +171,7 @@ describe('express-middleware-formatter', function() {
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
 				expect(res.body).to.be.an('array');
-				expect(res.body).to.have.length(100);
+				expect(res.body).to.have.length(users.length);
 				res.body.forEach(row => validateUser(row));
 				done();
 			});
@@ -233,7 +233,7 @@ describe('express-middleware-formatter', function() {
 				expect(workbook.SheetNames).to.have.length(1);
 
 				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-				expect(data).to.have.lengthOf.at.least(100);
+				expect(data).to.have.lengthOf.at.least(users.length);
 
 				data.forEach(row => validateUser(emf.unflatten(row)));
 
@@ -272,7 +272,7 @@ describe('express-middleware-formatter', function() {
 				expect(workbook.SheetNames).to.have.length(1);
 
 				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-				expect(data).to.have.lengthOf.at.least(100);
+				expect(data).to.have.lengthOf.at.least(users.length);
 
 				data.forEach(row => validateUser(emf.unflatten(row)));
 
@@ -294,7 +294,7 @@ describe('express-middleware-formatter', function() {
 				expect(workbook.SheetNames).to.have.length(1);
 
 				var data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-				expect(data).to.have.lengthOf.at.least(100);
+				expect(data).to.have.lengthOf.at.least(users.length);
 
 				data.forEach((row, i) => {
 					expect(row).to.have.property('ID', users[i].id);
@@ -311,7 +311,7 @@ describe('express-middleware-formatter', function() {
 	});
 
 	it('should retrieve object data as JSON - unmodified', function(done) {
-		superagent.get(`${url}/api/users/50`)
+		superagent.get(`${url}/api/users/${Math.floor(users.length / 2)}`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
 				expect(res.body).to.be.an('object');
@@ -321,7 +321,7 @@ describe('express-middleware-formatter', function() {
 	});
 
 	it('should retrieve object data as CSV', function(done) {
-		superagent.get(`${url}/api/users/50?format=csv`)
+		superagent.get(`${url}/api/users/${Math.floor(users.length / 2)}?format=csv`)
 			.end((err, res) => {
 				expect(err).to.not.be.ok;
 				expect(res.text).to.be.a('string');
