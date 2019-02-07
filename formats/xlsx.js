@@ -13,13 +13,13 @@ module.exports = {
 		},
 	},
 	transform: function(emf, settings, content, req, res, next) {
-		if ((_.isUndefined(settings.checkArray) || settings.checkArray) && !_.isArray(content)) return next('Data is not suitable for the XLXS output format');
+		if ((_.isUndefined(settings.xlsx.checkArray) || settings.xlsx.checkArray) && !_.isArray(content)) return next('Data is not suitable for the XLXS output format');
 
 		res.type('application/octet-stream');
-		res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename}"`);
+		res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename || 'Exported Data.xlsx'}"`);
 
 		// Determine whether to use templating
-		Promise.resolve(settings.xlsx.template)
+		Promise.resolve(_.isFunction(settings.xlsx.template) ? settings.xlsx.template(req, res, settings, content) : settings.xlsx.template)
 			.then(templatePath => {
 				if (templatePath) { // Use @mfdc/spreadsheet-handlebars to template the output
 					var SpreadsheetTemplater = require('@momsfriendlydevco/spreadsheet-templater');
