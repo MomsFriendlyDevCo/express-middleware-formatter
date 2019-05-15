@@ -157,7 +157,7 @@ describe('express-middleware-formatter', function() {
 		expect(user.status).to.be.oneOf(['active', 'pending', 'deleted']);
 
 		expect(user).to.have.property('lastLogin');
-		expect(user.lastLogin).to.be.a('string'); // This isnt actually correct since it should really be a string but almost all formats loose this distinction
+		// Note that we don't care about the date encoding because of weirdness with it either being a date or Excel weirdness
 
 		expect(user).to.have.property('allowLogin');
 		// expect(user.allowLogin).to.be.a('boolean'); // See lastLogin comment
@@ -300,7 +300,7 @@ describe('express-middleware-formatter', function() {
 					expect(row).to.have.property('ID', users[i].id);
 					expect(row).to.have.property('Username', users[i].username);
 					expect(row).to.have.property('Name', users[i].name);
-					expect(row).to.have.property('Email', users[i].email || 'undefined');
+					expect(row).to.have.property('Email', users[i].email || '');
 					expect(row).to.have.property('Address', `${users[i].address.street}, ${users[i].address.city}, ${users[i].address.zip}`);
 				});
 

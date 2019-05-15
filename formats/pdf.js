@@ -46,12 +46,11 @@ module.exports = {
 			})
 			// }}}
 			// Prince encoding {{{
-			.then(function(next) {
-				prince()
+			.then(function() {
+				return prince()
 					.inputs(this.princeHTML)
 					.output(this.princePDF)
 					.execute()
-					.then(()=> next(), next);
 			})
 			// }}}
 			// Remove front page {{{
