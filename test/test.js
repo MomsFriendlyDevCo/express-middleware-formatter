@@ -300,7 +300,7 @@ describe('express-middleware-formatter', function() {
 					expect(row).to.have.property('ID', users[i].id);
 					expect(row).to.have.property('Username', users[i].username);
 					expect(row).to.have.property('Name', users[i].name);
-					expect(row).to.have.property('Email', users[i].email || '');
+					expect(row).to.have.property('Email', users[i].email || 'undefined');
 					expect(row).to.have.property('Address', `${users[i].address.street}, ${users[i].address.city}, ${users[i].address.zip}`);
 				});
 
