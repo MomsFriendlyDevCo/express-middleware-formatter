@@ -42,6 +42,6 @@
     "xlsx": "^0.14.3"
   },
   "optionalDependencies": {
-    "@momsfriendlydevco/spreadsheet-templater": "^1.1.2"
+    "@momsfriendlydevco/spreadsheet-templater": "^1.1.4"
   }
 }
