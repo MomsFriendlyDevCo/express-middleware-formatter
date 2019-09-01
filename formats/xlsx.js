@@ -35,7 +35,7 @@ module.exports = {
 						.then(buf => res.send(buf))
 				} else { // Squash the content into an array, make a workbook and return it
 					var workbook = xlsx.utils.book_new();
-					var worksheet = xlsx.utils.json_to_sheet(content.map(i => emf.flatten(i)));
+					var worksheet = xlsx.utils.json_to_sheet(_.castArray(content).map(i => emf.flatten(i)));
 					xlsx.utils.book_append_sheet(workbook, worksheet, settings.xlsx.sheetName);
 					return res.send(xlsx.write(workbook, {
 						type: 'buffer',
