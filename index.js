@@ -68,6 +68,7 @@ var emf = function(options) {
 
 					async()
 						.set('content', this.content)
+						.limit(1)
 						.forEach(_.castArray(settings.unpack), function(next, unpacker) {
 							var res = unpacker.call(this, this.content, req, res, settings);
 							if (res instanceof Promise) { // Wait for the promise to resolve
