@@ -3,8 +3,8 @@ var async = require('async-chainable');
 var buffed = require('buffed');
 var cheerio = require('cheerio');
 var fs = require('fs');
+var pdftk = require('node-pdftk');
 var prince = require('prince');
-var scissors = require('scissors');
 var temp = require('temp');
 
 module.exports = {
@@ -54,14 +54,11 @@ module.exports = {
 			})
 			// }}}
 			// Remove front page {{{
-			.then('buffer', function(next) {
-				var buf = buffed()
-					.on('finish', ()=> next(null, buf.combine()));
-
-				scissors(this.princePDF)
-					.range(2)
-					.pdfStream()
-					.pipe(buf)
+			.then('buffer', function() {
+				return pdftk
+					.input(this.princePDF)
+					.cat('2-end')
+					.output()
 			})
 			// }}}
 			// Clean temp files {{{
