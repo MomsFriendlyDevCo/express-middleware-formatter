@@ -88,7 +88,7 @@ var emf = function(options) {
 				// }}}
 				// Format the data using the correct system {{{
 				.then(function(next) {
-					if (!emf.formats[this.format]) return next(`Unknown output format: "${this.format}"`);
+					if (!emf.formats[this.format]) return res.sendStatus(404);
 
 					emf.formats[this.format].transform(emf, settings, this.content, req, res, next);
 				})
@@ -99,6 +99,7 @@ var emf = function(options) {
 						// Do nothing
 					} else if (err) {
 						res.sendStatus(500);
+						// FIXME: Throwing will crash server, should we instead simply 500?
 						throw new Error(err);
 					} else {
 						res.type('application/json');
