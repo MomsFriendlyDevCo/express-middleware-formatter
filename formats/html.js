@@ -27,7 +27,7 @@ module.exports = {
 
 		if (!settings.html.passthru) {
 			res.type('html');
-			if (settings.html.download) res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.html.filename}"`);
+			if (settings.html.download) res.set('Content-Disposition', `attachment; filename="${settings.filename ? settings.filename + '.html' : settings.html.filename}"`);
 			res.send(outputBuffer);
 			next('STOP');
 		} else {

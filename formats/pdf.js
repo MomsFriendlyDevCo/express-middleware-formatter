@@ -71,7 +71,7 @@ module.exports = {
 			// Flush to output {{{
 			.then(function(next) {
 				res.type('application/pdf');
-				if (settings.pdf.download) res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.pdf.filename}"`);
+				if (settings.pdf.download) res.set('Content-Disposition', `attachment; filename="${settings.filename ? settings.filename + '.pdf' : settings.pdf.filename}"`);
 				res.send(this.buffer);
 				next('STOP');
 			})

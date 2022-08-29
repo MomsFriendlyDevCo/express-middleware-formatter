@@ -16,7 +16,7 @@ module.exports = {
 		if ((_.isUndefined(settings.xlsx.checkArray) || settings.xlsx.checkArray) && !_.isArray(content)) return next('Data is not suitable for the XLXS output format');
 
 		res.type('application/octet-stream');
-		res.set('Content-Disposition', `attachment; filename="${settings.filename || settings.xlsx.filename || 'Exported Data.xlsx'}"`);
+		res.set('Content-Disposition', `attachment; filename="${settings.filename ? settings.filename + '.xlsx' : settings.xlsx.filename || 'Exported Data.xlsx'}"`);
 
 		// Determine whether to use templating
 		Promise.resolve(_.isFunction(settings.xlsx.template) ? settings.xlsx.template(req, res, settings, content) : settings.xlsx.template)
